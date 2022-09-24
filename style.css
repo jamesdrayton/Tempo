@@ -1,0 +1,107 @@
+body {
+    background: #373737;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.slider::before {
+    background: linear-gradient( 0deg, #525252 0%, #373737 100%);
+    width: 10em;
+    height: 10em;
+    border-radius: 50%;
+    box-shadow: 
+        0px -20px 20px #757575, 
+        0px 20px 35px #111111,
+        inset 0px 5px 6px #979797,
+        inset 0px -5px 6px #242424;
+}
+.slider::before, .knob {
+    width: 10em;
+    height: 10em;
+    position: relative;
+}
+.knob::before, 
+.knob::after, 
+.slider::before {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+.knob::after {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px solid #333;
+    width: 150%;
+    height: 150%;
+    cursor: pointer;
+}
+
+/* The instructions box */
+.instruction {
+    border-style: solid
+}
+
+/* The play button */
+.playButton {
+    background-color: transparent;
+    margin: 60px auto;
+    position: relative;
+    width: 0;
+    height: 0;
+    top: -20px;
+    border-top: 25px solid transparent;
+    border-left: 50px solid rgba(207, 200, 200, 0.63);
+    border-bottom: 25px solid transparent;
+    cursor: pointer;
+}
+
+/* The next button */
+.nextButton {
+    background-color: transparent;
+    margin: 60px auto;
+    position: relative;
+    width: 0;
+    height: 0;
+    left: 175px;
+    border-top: 8px solid transparent;
+    border-left: 25px solid rgba(88, 78, 78, 0.63);
+    border-bottom: 8px solid transparent;
+    cursor: pointer;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.border {
+    border-style: solid;
+    border-color: #979797;
+    border-width: 5px;
+    position: relative;
+    display: grid;
+    top: 30px;
+    width: 500px;
+    justify-content: center;
+    align-items: center;
+}
+
+h1 {
+    position: fixed;
+    top: 20px;
+    left: 475px;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+p {
+    position: fixed;
+    top: 70px;
+    left: 480px;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}

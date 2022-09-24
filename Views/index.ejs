@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	    <title>Tempo Determination App</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="../style.css">
+    </head>
+    <!-- TODO: Add a counter for the number of tests done/remaining next to the instructions for the user--->
+    <body>
+        <h1>Tempo Determination Experiment</h1>
+        <p>Instructions: </p>
+        <container id="border" class="border">
+            <div class="playButton">
+                <input type="hidden" name="playAudio" value="playAudio">
+            </div>
+            <div class="slider">
+                <form class="knob" action="/tempo" method="POST">
+                    <input type="hidden" name="tempoKnob" id="tempoKnob">
+                </form>
+            </div>
+            <div class="nextButton">
+                <input type="hidden" name="nextButton" id="nextButton">
+            </div>
+        </container>
+        <script type="module" src="shifter.js"></script>
+        <script type="module" src="app.js"></script>
+    </body>
+</html>
