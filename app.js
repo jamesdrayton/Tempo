@@ -35,7 +35,7 @@ let playing = false; // boolean indicating whether audio is playing, false by de
 // takes an int (groups) representing the number of groups of files to be chosen from
 // takes an int array (ar) representing the files in each group to be chosen from
 // takes a string (context) representing if files should be context (true) or no-context (false)
-prepAudioPaths(2, 48, [75, 100, 150], 'context');
+prepAudioPaths(2, 1, [75, 100, 150], 'context');
 // Prepares the audio file for the experiment. 
 let audioSrc = audioPaths.pop();
 // let audioSrc = "../Audio/1_context_75.wav";
