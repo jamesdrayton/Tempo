@@ -1,0 +1,37 @@
+
+- Server-side:
+    - main.js runs the server and view engine using express and coordinates the use of other files.
+        - main.js can access soundtouchjs libraries to alter 
+    - package.json is a necessary part of the node environment that ensures all the dependencies are present and files are treated appropriately.
+- Client-side:
+    - index.ejs contains the html for the front end of the project. It exists in the views folder so main.js can present it.
+    - style.css contains the css necessary to style the front end of the project. It's just in the App folder because there's only one.
+    - app.js is requested from the server by index.ejs and runs the functionality of the front-end web-page (play button, tempo knob, etc.).
+        - app.js currently runs beat tracking and tempo changes client-side, which means that data has to be sent to the server manually.
+        Framework has been provided for this through the updateServer and fetch helper functions, but this has not been finished.
+        - app.js also contains the framework for iteration over all files of the naming convention 1_context_75, 2_nocontext_100, etc.
+        Iteration must be sure to update the server (main.js) with the list of paths so that the audio files can be provided on request.
+    - shifter.js is requested from the server by index.ejs, allowing app.js to parse .wav files and replicating soundtouchjs features 
+    so tempo changes can be made dynamically and without changes in pitch.
+
+Dependencies: node, body-parser, cors, ejs, express, nodemon, soundtouchjs, jspsych
+
+Instructions:
+1. Install Node.js on the computer or server running the app and run "npm install" in the tempo_determination directory
+2. Modify main.js so it runs on the desired webpage instead of a localhost port.
+3. Fill Audio folder with the files necessary for the experiment.
+4. Modify the local variables and prepAudioPaths variables in app.js for the desired experiment specifications.
+5. Run with "node main" or "nodemon main" in /Tempo_Determination/App
+
+TODO:
+1. Update beat tracking according to tempo changes
+2. Record and store data on a csv file
+
+Future-proofing: 
+1. Update soundtouchjs with the modified shifter.js and so that part of the project can be done easier with node.
+    - If this is done then you must also provide a type declaration file which soundtouch seems to be lacking.
+2. Replace the deprecated ScriptProcessorNode in shifter.js with AudioWorkletNode.
+3. Parse audio files other than .wav files into audiobuffers to be used in the experiment.
+4. Test other methods of beat tracking during testing.
+    - RxJS timer?
+5. Clean up helper functions and create more sanity checks for variables in app.js. Specifically prepAudioPaths may have unforeseen bugs.
