@@ -14,9 +14,10 @@ console.log("Next Button is active");
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const gainNode = audioCtx.createGain();
 const changeRate = 0.2;                       // The rate at which the tempo knob changes tempo
+const margin = 10;                            // Percentage of variability of the starting tempo
 let trueTempo;                                // True tempo of the audio file in ms
+// TODO: Set up a truetempo changer in the audio path prepping section
 let tempo = 100;                              // Tempo of the audio file as a percentage
-let margin = 10;                              // Percentage of variability of the starting tempo
 let shifter;                                  // Becomes the PitchShifter variable
 let tracker;                                  // Used for interval beat tracking
 
@@ -34,8 +35,8 @@ let playing = false; // boolean indicating whether audio is playing, false by de
 // takes an int (n) representing the total number of files to be included in the experiment
 // takes an int (groups) representing the number of groups of files to be chosen from
 // takes an int array (ar) representing the files in each group to be chosen from
-// takes a string (context) representing if files should be context (true) or no-context (false)
-prepAudioPaths(1, 1, [75, 100, 150], 'context');
+// takes a string (context) representing if files should be context or no-context
+prepAudioPaths(3, 1, [75, 100, 150], 'context');
 // Prepares the audio file for the experiment. 
 let audioSrc = audioPaths.pop();
 // let audioSrc = "../Audio/1_context_75.wav";
@@ -58,15 +59,7 @@ function onSuccess(request) {
 
 function onBuffer(buffer) {
     shifter = new PitchShifter(audioCtx, buffer, 1024);
-    // TODO: Move shifter tempo and pitch determinations into a helper function
-    let n = Math.floor(Math.random() * 2) + 1;
-    console.log(n);
-    switch (n) {
-        case 1:
-            tempo += (Math.random() * margin);
-        case 2:
-            tempo -= (Math.random() * margin);
-    }
+    marginChanger();
     shifter.tempo = tempo/100;
     shifter.pitch = 1;
     shifter.on('play', (detail) => {
@@ -82,26 +75,16 @@ function onBuffer(buffer) {
 // Functions for reacting to tempo knob input
 // Called every frame of movement from the mouse while a click is held down on the tempo knob
 function tempoKnob(e) {
-    const knobW = knob.clientWidth * 3.5;
-    const knobH = knob.clientHeight * 1.5;
-    // const knobW = knob.getBoundingClientRect().x;
-    // const knobH = knob.getBoundingClientRect().y / 2;
-    // console.log("knobW: " + knobW);
-    // console.log("knobH: " + knobH);
+    
+    const knobW = knob.getBoundingClientRect().x - (knob.getBoundingClientRect().width / 2);
+    const knobH = knob.getBoundingClientRect().y - (knob.getBoundingClientRect().height / 2);
 
-    // mouse coordinates
+    // Mouse coordinates offset by the knob size
     const currX = e.clientX - knob.offsetLeft;
     const currY = e.clientY - knob.offsetTop;
 
-    // console.log("currX: " + currX);
-    // console.log("currY: " + currY);
-    // console.log("prevX: " + prevX);
-    // console.log("prevY: " + prevY);
-
     const deltaX = knobW - currX;
     const deltaY = knobH - currY;
-    // console.log(deltaX);
-    // console.log(deltaY);
 
     // mouse coordinates in radians and degrees
     const rad = Math.atan2(deltaY, deltaX);
@@ -162,9 +145,6 @@ function tempoKnob(e) {
         tempo = 1;
     }
     console.log(tempo);
-
-    clearInterval(tracker);
-    tracker = setInterval(beatTrack, tempo - deltaT);
     return deg;
 }
 
@@ -193,86 +173,85 @@ next.addEventListener("click", nextAudio);
 // Triggers when the play button is pressed
 function startTest() {
     knob.addEventListener("mousedown", startRotation);
-    shifter.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    shifter.connect(gainNode);              // connect it to a GainNode to control the volume
+    gainNode.connect(audioCtx.destination); // attach the GainNode to the 'destination' to begin playback
     audioCtx.resume().then(() => {
         playing = true;
         this.setAttribute('disabled', 'disabled');
     });
     tracker = setInterval(beatTrack, trueTempo);
-    shifter.connect(gainNode); // connect it to a GainNode to control the volume
-    gainNode.connect(audioCtx.destination); // attach the GainNode to the 'destination' to begin playback
 }
 
+// Triggers when the next button is pressed
 function nextAudio() {
     audioSrc = shifter.disconnect();
     knob.removeEventListener("mousedown", startRotation);
     playing = false;
+    clearInterval(tracker);
     tempo = 100;
     // TODO: Save recorded data here
     if (audioPaths.length == 0) {
         // The experiment is done, maybe send a message to the user?
+        console.log("List of audio paths exhausted, the experiment is over");
     } else {
         audioSrc = audioPaths.pop();
         fetch(audioSrc);
     }
 }
 
-// helper function to change the tempo of the audio
+// ___________________________________________________________ Helper Functions ______________________________________________________
+
+// Helper function to change the tempo of the audio
 // takes an int representing the new tempo of the audio as a percentage
 function changeTempo(t) { 
-    // console.log(t/100);
     shifter.tempo = t/100;
     shifter.pitch = 1;     // ensures the pitch stays the same after changing tempo
+    // Resets the beat tracker every time the tempo changes
+    clearInterval(tracker);
+    tracker = setInterval(beatTrack, (trueTempo - (trueTempo * deltaT/100)));
 }
 
-// helper function to log how many beats the audio has been playing
+// Helper function to log how many beats the audio has been playing
 function beatTrack() {
-    //console.log("Beat #: " + beat);
-    if (beat == 8) {
-        beat = 0;
-    }
+    console.log("Beat #: " + beat);
     beat++;
     if (shifter.percentagePlayed == 100) {
         shifter.percentagePlayed = 0;
     }
 }
 
-// helper function to prep the paths of all audio files which will be used in this experiment
+// Helper function to prep the paths of all audio files which will be used in this experiment
 // takes an int (n) representing the total number of files to be included in the experiment
 // takes an int (groups) representing the number of groups of files to be chosen from
 // takes an int array (ar) representing the files in each group to be chosen from
 // takes a string (context) representing if files should be context or nocontext
 function prepAudioPaths(n, groups, ar, context) {
-    // TODO: Throw error if n is larger than i
-    var path = './Audio/';
-    var group;
-    var nums = [];
     for (var i = 0; i < n; i++) {
-        group = prepAudioGroup(groups, nums);
-        nums.push(group);
-        audioPaths.push(path + group + '_' + context + '_' + '75' + '.wav');
+        prepAudioPath(n, groups, ar, context);
     }
     trueTempo = 800;
     console.log(audioPaths);
-    // TODO: Finalize naming policy and alter this function accordingly to access files other than those tagged with '75'.
 }
 
-// NOTE: AN ERROR OCCURS BETWEEN THE NUMBER BEING GENERATED AND THE TRANSITION TO A STRING.
-
-// helper function to generate a random number from 1 to n which is not in the nums array
-// takes the number of groups to choose from in the experiment (n) and the groups previously chosen (nums)
-function prepAudioGroup(n, nums) {
-    var num = Math.floor(Math.random() * n) + 1;
-    if (inArray(num, nums)) {
-        prepAudioGroup(n, nums);
+// Helper function to allow for recursion inside of prepAudioPaths and avoid duplicate paths
+// takes an int (n) representing the total number of files to be included in the experiment
+// takes an int (groups) representing the number of groups of files to be chosen from
+// takes an int array (ar) representing the files in each group to be chosen from
+// takes a string (context) representing if files should be context or nocontext
+function prepAudioPath(n, groups, ar, context) {
+    var group = Math.floor(Math.random() * groups) + 1;
+    var num = ar[(Math.floor(Math.random() * ar.length))];
+    var path = './Audio/' + group + '_' + context + '_' + num + '.wav';
+    if (inArray(path, audioPaths)) {
+        prepAudioPath(n, groups, ar, context);
     } else {
-        console.log(num);
-        return num;
+        audioPaths.push(path)
     }
 }
 
-// helper function to check if an element already exists in an array
+// Helper function to check if an element already exists in an array
+// takes an element (el) and an array (ar)
+// returns true if the element is in the array and false if it is not
 function inArray(el, ar) {
     for(var i = 0 ; i < ar.length; i++) {
         if(ar[i] == el) {
@@ -280,4 +259,19 @@ function inArray(el, ar) {
         }
     }
     return false;
+}
+
+// Helper function to randomly add or subtract a percentage from the tempo based on the "margin" const
+function marginChanger() {
+    let n = Math.floor(Math.random() * 2) + 1;
+    let ran = (Math.random() * margin)
+    console.log(n);
+    switch (n) {
+        case 1:
+            tempo += ran;
+            trueTempo += ran;
+        case 2:
+            tempo -= ran;
+            trueTempo -= ran;
+    }
 }

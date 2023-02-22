@@ -6,10 +6,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
-const port = 3000; // the port the server is created on
-let audioSrc; // the path to the audio file
-let playing = false; // whether the audio is playing upon loading the page
-let tempo = 800; // the starting tempo of the currently running audio file
+const port = 3000;          // the port the server is created on
+let audioSrc;               // the path to the audio file
+let playing = false;        // whether the audio is playing upon loading the page
+let tempo = 800;            // the starting tempo of the currently running audio file
 let beat = 1;
 let shifter;
 let audioPaths;
@@ -40,19 +40,6 @@ app.get('/shifter.js', (req, res) => {
     res.sendFile('shifter.js', { root: __dirname });
     console.log("shifter.js provided to client");
 });
-
-// // Respond to the client's request for audio by sending the file
-// app.post('/audioSrc', (req, res) => {
-//     console.log("Audio sources received");
-//     console.log("Audio file provided to client")
-//     console.log(req.body);
-// });
-
-// app.get('/audioSrc', (req, res) => {
-//     console.log("audioSrc get request received");
-//     console.log(req.body);
-//     // res.sendFile('/Audio/9_context_75.wav', {root: __dirname});
-// });
 
 app.post('/', (req, res) => {
     console.log("Play button loaded");
